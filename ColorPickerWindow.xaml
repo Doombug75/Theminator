@@ -1,0 +1,269 @@
+<Window x:Class="Theminator.ColorPickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Color Picker"
+        Width="500" Height="460"
+        MinWidth="500" MinHeight="460"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="#0D1117"
+        Foreground="#E6EDF3">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock x:Name="TitleText" Grid.Row="0"
+                   FontSize="14" FontWeight="SemiBold"
+                   Foreground="#18C0B4" Margin="0,0,0,10"/>
+
+        <!-- Picker area: SV canvas + Hue bar + Alpha bar -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="36"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- SV Canvas -->
+            <Canvas x:Name="SvCanvas" Grid.Column="0"
+                    Width="220" Height="220"
+                    HorizontalAlignment="Left"
+                    Cursor="Crosshair"
+                    MouseDown="SvCanvas_MouseDown"
+                    MouseMove="SvCanvas_MouseMove"
+                    MouseUp="SvCanvas_MouseUp">
+                <!-- Hue background -->
+                <Rectangle x:Name="SvHueBg" Width="220" Height="220" Canvas.Left="0" Canvas.Top="0"/>
+                <!-- White gradient overlay -->
+                <Rectangle Width="220" Height="220" Canvas.Left="0" Canvas.Top="0">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="White" Offset="0"/>
+                            <GradientStop Color="Transparent" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <!-- Black gradient overlay -->
+                <Rectangle Width="220" Height="220" Canvas.Left="0" Canvas.Top="0">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="Transparent" Offset="0"/>
+                            <GradientStop Color="Black" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <!-- Cursor circle -->
+                <Ellipse x:Name="SvCursor" Width="12" Height="12"
+                         Stroke="White" StrokeThickness="2"
+                         Fill="Transparent"
+                         Canvas.Left="0" Canvas.Top="0"
+                         IsHitTestVisible="False"/>
+            </Canvas>
+
+            <!-- Hue bar -->
+            <Canvas x:Name="HueCanvas" Grid.Column="1"
+                    Width="24" Height="220"
+                    HorizontalAlignment="Center"
+                    Cursor="Hand"
+                    MouseDown="HueCanvas_MouseDown"
+                    MouseMove="HueCanvas_MouseMove"
+                    MouseUp="HueCanvas_MouseUp">
+                <Rectangle Width="24" Height="220" Canvas.Left="0" Canvas.Top="0">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="Red"     Offset="0"/>
+                            <GradientStop Color="Yellow"  Offset="0.167"/>
+                            <GradientStop Color="Lime"    Offset="0.333"/>
+                            <GradientStop Color="Cyan"    Offset="0.5"/>
+                            <GradientStop Color="Blue"    Offset="0.667"/>
+                            <GradientStop Color="Magenta" Offset="0.833"/>
+                            <GradientStop Color="Red"     Offset="1"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <!-- Hue cursor triangle -->
+                <Polygon x:Name="HueCursor"
+                         Points="0,0 -6,-5 -6,5"
+                         Fill="#E6EDF3" Stroke="#0D1117" StrokeThickness="1"
+                         Canvas.Left="24" Canvas.Top="0"
+                         IsHitTestVisible="False"/>
+            </Canvas>
+
+            <!-- Alpha bar -->
+            <Canvas x:Name="AlphaCanvas" Grid.Column="2"
+                    Width="24" Height="220"
+                    HorizontalAlignment="Center"
+                    Cursor="Hand"
+                    MouseDown="AlphaCanvas_MouseDown"
+                    MouseMove="AlphaCanvas_MouseMove"
+                    MouseUp="AlphaCanvas_MouseUp">
+                <!-- Checker background for transparency -->
+                <Rectangle Width="24" Height="220" Canvas.Left="0" Canvas.Top="0">
+                    <Rectangle.Fill>
+                        <DrawingBrush TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">
+                            <DrawingBrush.Drawing>
+                                <DrawingGroup>
+                                    <GeometryDrawing Brush="White">
+                                        <GeometryDrawing.Geometry>
+                                            <RectangleGeometry Rect="0,0,8,8"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                    <GeometryDrawing Brush="#CCCCCC">
+                                        <GeometryDrawing.Geometry>
+                                            <GeometryGroup>
+                                                <RectangleGeometry Rect="0,0,4,4"/>
+                                                <RectangleGeometry Rect="4,4,4,4"/>
+                                            </GeometryGroup>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                </DrawingGroup>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Rectangle x:Name="AlphaBarRect" Width="24" Height="220" Canvas.Left="0" Canvas.Top="0"/>
+                <!-- Alpha cursor -->
+                <Polygon x:Name="AlphaCursor"
+                         Points="0,0 -6,-5 -6,5"
+                         Fill="#E6EDF3" Stroke="#0D1117" StrokeThickness="1"
+                         Canvas.Left="24" Canvas.Top="0"
+                         IsHitTestVisible="False"/>
+            </Canvas>
+        </Grid>
+
+        <!-- Color swatches + Hex field -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Height="36" BorderBrush="#243044" BorderThickness="1" CornerRadius="3">
+                <Border.Background>
+                    <DrawingBrush TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">
+                        <DrawingBrush.Drawing>
+                            <DrawingGroup>
+                                <GeometryDrawing Brush="White">
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="0,0,8,8"/>
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                                <GeometryDrawing Brush="#CCCCCC">
+                                    <GeometryDrawing.Geometry>
+                                        <GeometryGroup>
+                                            <RectangleGeometry Rect="0,0,4,4"/>
+                                            <RectangleGeometry Rect="4,4,4,4"/>
+                                        </GeometryGroup>
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                            </DrawingGroup>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Border.Background>
+                <Rectangle x:Name="OldColorSwatch" Height="36" RadiusX="2" RadiusY="2"/>
+            </Border>
+
+            <Border Grid.Column="2" Height="36" BorderBrush="#243044" BorderThickness="1" CornerRadius="3">
+                <Border.Background>
+                    <DrawingBrush TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">
+                        <DrawingBrush.Drawing>
+                            <DrawingGroup>
+                                <GeometryDrawing Brush="White">
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="0,0,8,8"/>
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                                <GeometryDrawing Brush="#CCCCCC">
+                                    <GeometryDrawing.Geometry>
+                                        <GeometryGroup>
+                                            <RectangleGeometry Rect="0,0,4,4"/>
+                                            <RectangleGeometry Rect="4,4,4,4"/>
+                                        </GeometryGroup>
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                            </DrawingGroup>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Border.Background>
+                <Rectangle x:Name="NewColorSwatch" Height="36" RadiusX="2" RadiusY="2"/>
+            </Border>
+
+            <TextBlock Grid.Column="4" Text="#" Foreground="#6E8094"
+                       VerticalAlignment="Center" FontFamily="Consolas" FontSize="14"/>
+            <TextBox x:Name="HexBox" Grid.Column="6"
+                     FontFamily="Consolas" FontSize="13"
+                     MaxLength="8"
+                     VerticalAlignment="Center"
+                     TextChanged="HexBox_TextChanged"/>
+        </Grid>
+
+        <!-- RGBA Sliders -->
+        <Grid Grid.Row="3" Margin="0,8,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="28"/>
+                <RowDefinition Height="28"/>
+                <RowDefinition Height="28"/>
+                <RowDefinition Height="28"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="44"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- R -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="R" Foreground="#E06060" VerticalAlignment="Center" FontWeight="Bold"/>
+            <Slider x:Name="SliderR" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="255"
+                    VerticalAlignment="Center" Margin="4,0"
+                    ValueChanged="SliderR_ValueChanged"/>
+            <TextBox x:Name="BoxR" Grid.Row="0" Grid.Column="2" MaxLength="3" Width="40"
+                     FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                     VerticalAlignment="Center" TextChanged="BoxR_TextChanged"/>
+
+            <!-- G -->
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="G" Foreground="#60E060" VerticalAlignment="Center" FontWeight="Bold"/>
+            <Slider x:Name="SliderG" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="255"
+                    VerticalAlignment="Center" Margin="4,0"
+                    ValueChanged="SliderG_ValueChanged"/>
+            <TextBox x:Name="BoxG" Grid.Row="1" Grid.Column="2" MaxLength="3" Width="40"
+                     FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                     VerticalAlignment="Center" TextChanged="BoxG_TextChanged"/>
+
+            <!-- B -->
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="B" Foreground="#6080E0" VerticalAlignment="Center" FontWeight="Bold"/>
+            <Slider x:Name="SliderB" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="255"
+                    VerticalAlignment="Center" Margin="4,0"
+                    ValueChanged="SliderB_ValueChanged"/>
+            <TextBox x:Name="BoxB" Grid.Row="2" Grid.Column="2" MaxLength="3" Width="40"
+                     FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                     VerticalAlignment="Center" TextChanged="BoxB_TextChanged"/>
+
+            <!-- A -->
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="A" Foreground="#A0A0A0" VerticalAlignment="Center" FontWeight="Bold"/>
+            <Slider x:Name="SliderA" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="255" Value="255"
+                    VerticalAlignment="Center" Margin="4,0"
+                    ValueChanged="SliderA_ValueChanged"/>
+            <TextBox x:Name="BoxA" Grid.Row="3" Grid.Column="2" MaxLength="3" Width="40"
+                     FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                     VerticalAlignment="Center" TextChanged="BoxA_TextChanged"/>
+        </Grid>
+
+        <!-- OK / Cancel -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Cancel" Width="80" Margin="0,0,8,0" Click="Cancel_Click"/>
+            <Button Content="OK" Width="80" Background="#18C0B4" Foreground="#060C10"
+                    FontWeight="SemiBold" Click="OK_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
