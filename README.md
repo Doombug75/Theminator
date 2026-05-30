@@ -4,7 +4,8 @@
 
 # OXSUIT Theminator
 
-**Put the bull in a suit.**
+**Put the bull in a suit.**  
+***BEEF up your UI.***
 
 *Visual theme editor for the [OXSUIT 1.0](https://github.com/Doombug75/OXSUIT) open theme standard*
 
