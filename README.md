@@ -73,7 +73,7 @@ No installer needed. Copy the `.exe` and run.
 ## Building from source
 
 ```
-git clone https://github.com/Doombug75/OXSUIT
+git clone https://github.com/Doombug75/Theminator
 cd Theminator
 dotnet build
 ```
