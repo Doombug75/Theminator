@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="Assets/Oxminator_256.png" width="140" alt="Oxminator — The Bull in a Suit"/>
+<img src="Assets/Oxminator_1024.png" width="280" alt="Oxminator — The Bull in a Suit"/>
 
 # OXSUIT Theminator
 

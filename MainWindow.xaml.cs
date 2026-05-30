@@ -74,7 +74,9 @@ public partial class MainWindow : Window
     private Border     _pWindowFrame   = null!;
     private Border     _pFakeTitleBar  = null!;
     private TextBlock  _pFakeTitleText = null!;
-    private System.Windows.Media.Effects.DropShadowEffect _windowFrameShadow = null!;
+    private Border     _pShadowBar     = null!;  // contact shadow below the frame
+    // Inner element shadows (DropShadowEffect works inside _pWindowFrame's clip)
+    private readonly List<System.Windows.Media.Effects.DropShadowEffect> _elementShadows = new();
 
     // Geometry sliders (left panel)
     private Slider _cornerRadiusSlider = null!;
@@ -426,6 +428,7 @@ public partial class MainWindow : Window
     private void BuildPreviewPanel()
     {
         PreviewPanel.Children.Clear();
+        _elementShadows.Clear();
 
         // ── Oxminator mascot — round elevated frame ───────────────────────────
         try
@@ -564,6 +567,7 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 4), Child = ctrlSp
         };
         MakeBgClickable(_pControlBorder, "ControlBgBrush");
+        { var s = new System.Windows.Media.Effects.DropShadowEffect { Direction=315, ShadowDepth=0, BlurRadius=4, Color=Colors.Black, Opacity=0 }; _pControlBorder.Effect = s; _elementShadows.Add(s); }
 
         _pControlHoverLabel = MakePreviewText("Hover state", 10);
         MakeClickable(_pControlHoverLabel, "ControlHoverBrush");
@@ -618,6 +622,7 @@ public partial class MainWindow : Window
         b1sp.Children.Add(hdr1); b1sp.Children.Add(_pBubble1Text); b1sp.Children.Add(_pBubble1Dim); b1sp.Children.Add(_pBubble1High);
         _pBubble1 = new Border { Padding = new Thickness(10, 8, 10, 8), CornerRadius = new CornerRadius(6), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 6), Child = b1sp };
         MakeBgClickable(_pBubble1, "PrimaryBubbleBrush");
+        { var s = new System.Windows.Media.Effects.DropShadowEffect { Direction=315, ShadowDepth=0, BlurRadius=4, Color=Colors.Black, Opacity=0 }; _pBubble1.Effect = s; _elementShadows.Add(s); }
 
         // Secondary bubble
         _pBubble2Avatar = new Ellipse { Width = 8, Height = 8, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
@@ -638,6 +643,7 @@ public partial class MainWindow : Window
         b2sp.Children.Add(hdr2); b2sp.Children.Add(_pBubble2Text); b2sp.Children.Add(_pBubble2Dim); b2sp.Children.Add(_pBubble2High);
         _pBubble2 = new Border { Padding = new Thickness(10, 8, 10, 8), CornerRadius = new CornerRadius(6), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 6), Child = b2sp };
         MakeBgClickable(_pBubble2, "SecondaryBubbleBrush");
+        { var s = new System.Windows.Media.Effects.DropShadowEffect { Direction=315, ShadowDepth=0, BlurRadius=4, Color=Colors.Black, Opacity=0 }; _pBubble2.Effect = s; _elementShadows.Add(s); }
 
         // Tertiary bubble
         _pBubble3Avatar = new Ellipse { Width = 8, Height = 8, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
@@ -658,6 +664,7 @@ public partial class MainWindow : Window
         b3sp.Children.Add(hdr3); b3sp.Children.Add(_pBubble3Text); b3sp.Children.Add(_pBubble3Dim); b3sp.Children.Add(_pBubble3High);
         _pBubble3 = new Border { Padding = new Thickness(10, 8, 10, 8), CornerRadius = new CornerRadius(6), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 0), Child = b3sp };
         MakeBgClickable(_pBubble3, "TertiaryBubbleBrush");
+        { var s = new System.Windows.Media.Effects.DropShadowEffect { Direction=315, ShadowDepth=0, BlurRadius=4, Color=Colors.Black, Opacity=0 }; _pBubble3.Effect = s; _elementShadows.Add(s); }
 
         var contentBody = new StackPanel { Margin = new Thickness(8, 8, 8, 8) };
         contentBody.Children.Add(contentHeader);
@@ -697,6 +704,7 @@ public partial class MainWindow : Window
         _pAccentBtnBorder.MouseEnter += (_, _) => _pAccentBtnBorder.Opacity = 0.78;
         _pAccentBtnBorder.MouseLeave += (_, _) => _pAccentBtnBorder.Opacity = 1.0;
         MakeBgClickable(_pAccentBtnBorder, "AccentBgBrush");
+        { var s = new System.Windows.Media.Effects.DropShadowEffect { Direction=315, ShadowDepth=0, BlurRadius=4, Color=Colors.Black, Opacity=0 }; _pAccentBtnBorder.Effect = s; _elementShadows.Add(s); }
 
         // ── Input bar: typed-text row + dim/high samples below ───────────────
         var inputRowGrid = new Grid();
@@ -814,23 +822,30 @@ public partial class MainWindow : Window
         windowGrid.Children.Add(_pInputBorder2);
         windowGrid.Children.Add(_pAccentAreaBorder);
 
-        _windowFrameShadow = new System.Windows.Media.Effects.DropShadowEffect
-            { ShadowDepth = 4, BlurRadius = 10, Color = Colors.Black, Opacity = 0.4 };
-
         _pWindowFrame = new Border
         {
             BorderThickness = new Thickness(1),
             CornerRadius    = new CornerRadius(7),
             ClipToBounds    = true,
             MinHeight       = 460,
-            Margin          = new Thickness(0, 0, 0, 4),
-            Effect          = _windowFrameShadow,
+            Margin          = new Thickness(8, 4, 8, 0),
             Child           = windowGrid
         };
         MakeBgClickable(_pWindowFrame, "ContentBgBrush");
 
+        // Contact shadow: a gradient bar directly below the frame in normal
+        // layout flow — immune to ScrollViewer clipping (it's a plain element).
+        _pShadowBar = new Border
+        {
+            Height       = 0,
+            CornerRadius = new CornerRadius(0, 0, 7, 7),
+            Margin       = new Thickness(16, 0, 16, 12),
+            IsHitTestVisible = false
+        };
+
         // ── Add to panel ──────────────────────────────────────────────────────
         PreviewPanel.Children.Add(_pWindowFrame);
+        PreviewPanel.Children.Add(_pShadowBar);
     }
 
     // ── Preview helpers ───────────────────────────────────────────────────────
@@ -1044,9 +1059,24 @@ public partial class MainWindow : Window
         _pNavActiveItemBorder.CornerRadius  = new CornerRadius(Math.Min(cr, 4));
 
         var sd = _model.ShadowDepth;
-        _windowFrameShadow.ShadowDepth = sd;
-        _windowFrameShadow.BlurRadius  = Math.Max(4, sd * 2.5);
-        _windowFrameShadow.Opacity     = Math.Min(0.6, 0.15 + sd * 0.04);
+
+        // Inner element shadows (bubbles, cards, send button)
+        foreach (var eff in _elementShadows)
+        {
+            eff.ShadowDepth = sd < 0.5 ? 0 : Math.Min(sd * 0.7, 7);
+            eff.BlurRadius  = sd < 0.5 ? 0 : Math.Max(2, sd * 1.5);
+            eff.Opacity     = sd < 0.5 ? 0 : Math.Min(0.55, 0.08 + sd * 0.04);
+        }
+
+        // Contact shadow bar — teal-tinted so it's clearly visible on the dark
+        // app background (#0D1117 ≈ near-black; pure black shadow is invisible there).
+        _pShadowBar.Height = sd < 0.5 ? 0 : Math.Max(8, sd * 6);
+        _pShadowBar.Margin = new Thickness(12 + sd * 2, 0, 12 + sd * 2, 12);
+        var shadowAlpha    = sd < 0.5 ? (byte)0 : (byte)Math.Min(220, 60 + sd * 13);
+        _pShadowBar.Background = new LinearGradientBrush(
+            Color.FromArgb(shadowAlpha, 0x08, 0x08, 0x08),   // near-black top
+            Color.FromArgb(0,           0x08, 0x08, 0x08),   // transparent bottom
+            new Point(0, 0), new Point(0, 1));
 
         // Per-element border thicknesses
         _pBubble1.BorderThickness   = new Thickness(_model.GetThickness("PrimaryBubbleBorderBrush"));
@@ -1058,7 +1088,8 @@ public partial class MainWindow : Window
         _pFakeTitleBar.BorderThickness  = new Thickness(0, 0, 0, _model.GetThickness("SidebarBorderBrush"));
         _pWindowFrame.BorderThickness   = new Thickness(_model.GetThickness("ContentBorderBrush"));
 
-        // Window frame
+        // Window frame — Background must be set (non-null) for DropShadowEffect to render
+        _pWindowFrame.Background     = Brush(GetColor("ContentBgBrush"));
         _pWindowFrame.BorderBrush    = Brush(GetColor("ContentBorderBrush"));
 
         // Fake title bar (SidebarBg surface)
@@ -1512,7 +1543,10 @@ public partial class MainWindow : Window
         var now = DateTime.Now;
         if (_lastRandomizeConfirmed.HasValue &&
             (now - _lastRandomizeConfirmed.Value).TotalSeconds < 30)
-            return true;  // still within the 30 s window — skip the dialog
+        {
+            _lastRandomizeConfirmed = now;  // reset the window on every active press
+            return true;
+        }
 
         var result = MessageBox.Show(this,
             "All current theme colours will be overwritten.\n\nContinue?",
