@@ -1,9 +1,11 @@
 namespace Theminator;
 
 using System;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Theminator.Models;
@@ -20,6 +22,7 @@ public partial class ColorPickerWindow : Window
 
     private bool _svDragging;
     private bool _hueDragging;
+    private bool _brightnessDragging;
     private bool _alphaDragging;
 
     private const double SvSize = 220;
@@ -27,7 +30,17 @@ public partial class ColorPickerWindow : Window
 
     public ColorPickerWindow(Color initialColor, string keyName)
     {
+        // Block all ValueChanged/TextChanged handlers from firing during
+        // InitializeComponent() — some XAML-declared default values (e.g.
+        // SliderA Value="255") trigger events before every named control
+        // has been instantiated, causing NullReferenceException in LoadState.
+        _updating = true;
         InitializeComponent();
+        _updating = false;
+
+        // Dark title bar — must wait until the HWND is created
+        SourceInitialized += (_, _) => ApplyDarkTitleBar();
+
         TitleText.Text = $"Color Picker — {keyName}";
         ColorResult = initialColor;
 
@@ -109,6 +122,20 @@ public partial class ColorPickerWindow : Window
             double hy = (_hue / 360.0) * BarHeight;
             Canvas.SetTop(HueCursor, hy);
 
+            // Brightness bar — gradient from full-bright hue+sat at top → black at bottom
+            var brightTop    = HsvToColor(_hue, _sat, 1.0, 255);
+            var brightBottom = Color.FromArgb(255, 0, 0, 0);
+            BrightnessBarRect.Fill = new LinearGradientBrush(
+                new GradientStopCollection {
+                    new GradientStop(brightTop,    0),
+                    new GradientStop(brightBottom, 1)
+                },
+                new Point(0, 0), new Point(0, 1));
+
+            // Brightness cursor
+            double bry = (1 - _val) * BarHeight;
+            Canvas.SetTop(BrightnessCursor, bry);
+
             // Alpha bar gradient
             var opaqueColor = Color.FromArgb(255, c.R, c.G, c.B);
             var transparentColor = Color.FromArgb(0, c.R, c.G, c.B);
@@ -188,6 +215,32 @@ public partial class ColorPickerWindow : Window
     private void UpdateHueFromPoint(Point p)
     {
         _hue = Math.Clamp(p.Y / BarHeight, 0, 1) * 360;
+        LoadState();
+    }
+
+    // ── Brightness Bar ────────────────────────────────────────────────────────
+
+    private void BrightnessCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        _brightnessDragging = true;
+        BrightnessCanvas.CaptureMouse();
+        UpdateBrightnessFromPoint(e.GetPosition(BrightnessCanvas));
+    }
+
+    private void BrightnessCanvas_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_brightnessDragging) UpdateBrightnessFromPoint(e.GetPosition(BrightnessCanvas));
+    }
+
+    private void BrightnessCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        _brightnessDragging = false;
+        BrightnessCanvas.ReleaseMouseCapture();
+    }
+
+    private void UpdateBrightnessFromPoint(Point p)
+    {
+        _val = Math.Clamp(1 - p.Y / BarHeight, 0, 1);
         LoadState();
     }
 
@@ -312,5 +365,27 @@ public partial class ColorPickerWindow : Window
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = false;
+    }
+
+    // ── Dark title bar ────────────────────────────────────────────────────────
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(
+        IntPtr hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
+
+    private void ApplyDarkTitleBar()
+    {
+        try
+        {
+            if (PresentationSource.FromVisual(this) is not HwndSource src) return;
+            var hwnd  = src.Handle;
+            int dark    = 1;
+            int caption = 0x0017110D;   // #0D1117 → COLORREF (B=17 G=11 R=0D)
+            int text    = 0x00F3EDE6;   // #E6EDF3 → COLORREF (B=F3 G=ED R=E6)
+            DwmSetWindowAttribute(hwnd, 20, ref dark,    sizeof(int));
+            DwmSetWindowAttribute(hwnd, 35, ref caption, sizeof(int));
+            DwmSetWindowAttribute(hwnd, 36, ref text,    sizeof(int));
+        }
+        catch { /* cosmetic only */ }
     }
 }

@@ -2,8 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Color Picker"
-        Width="500" Height="460"
-        MinWidth="500" MinHeight="460"
+        Width="540" Height="530"
+        MinWidth="540" MinHeight="530"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         Background="#0D1117"
@@ -11,7 +11,7 @@
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>  <!-- picker canvas — explicit Auto so swatches always render below it -->
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -28,13 +28,14 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="36"/>
                 <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="36"/>
             </Grid.ColumnDefinitions>
 
             <!-- SV Canvas -->
             <Canvas x:Name="SvCanvas" Grid.Column="0"
                     Width="220" Height="220"
                     HorizontalAlignment="Left"
-                    Cursor="Crosshair"
+                    Cursor="Cross"
                     MouseDown="SvCanvas_MouseDown"
                     MouseMove="SvCanvas_MouseMove"
                     MouseUp="SvCanvas_MouseUp">
@@ -95,8 +96,25 @@
                          IsHitTestVisible="False"/>
             </Canvas>
 
+            <!-- Brightness bar -->
+            <Canvas x:Name="BrightnessCanvas" Grid.Column="2"
+                    Width="24" Height="220"
+                    HorizontalAlignment="Center"
+                    Cursor="Hand"
+                    MouseDown="BrightnessCanvas_MouseDown"
+                    MouseMove="BrightnessCanvas_MouseMove"
+                    MouseUp="BrightnessCanvas_MouseUp">
+                <Rectangle x:Name="BrightnessBarRect" Width="24" Height="220" Canvas.Left="0" Canvas.Top="0"/>
+                <!-- Brightness cursor -->
+                <Polygon x:Name="BrightnessCursor"
+                         Points="0,0 -6,-5 -6,5"
+                         Fill="#E6EDF3" Stroke="#0D1117" StrokeThickness="1"
+                         Canvas.Left="24" Canvas.Top="0"
+                         IsHitTestVisible="False"/>
+            </Canvas>
+
             <!-- Alpha bar -->
-            <Canvas x:Name="AlphaCanvas" Grid.Column="2"
+            <Canvas x:Name="AlphaCanvas" Grid.Column="3"
                     Width="24" Height="220"
                     HorizontalAlignment="Center"
                     Cursor="Hand"

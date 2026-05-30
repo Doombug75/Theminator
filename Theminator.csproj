@@ -7,7 +7,18 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>Theminator</AssemblyName>
     <RootNamespace>Theminator</RootNamespace>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
     <SelfContained>false</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
+    <ApplicationIcon>Assets\Oxminator.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <!-- Embed logo assets into the assembly so they work in single-file publish -->
+  <ItemGroup>
+    <Resource Include="Assets\Oxminator.ico"/>
+    <Resource Include="Assets\Oxminator_256.png"/>
+    <Resource Include="Assets\Oxminator_1024.png"/>
+  </ItemGroup>
+
 </Project>
