@@ -6,7 +6,7 @@
 
 **Put the bull in a suit.**
 
-*Visual theme editor for the [OXSUIT](../OXSUIT) open theme standard*
+*Visual theme editor for the [OXSUIT 1.0](https://github.com/Doombug75/OXSUIT) open theme standard*
 
 </div>
 
@@ -14,26 +14,31 @@
 
 Theminator is a standalone WPF desktop application for creating, editing, and previewing `.oxsuit`
 theme files. Every color slot is editable with a purpose-built HSV color picker. Changes appear
-live in the built-in preview panel. Save a theme, drop it in your app's `Themes/` folder — done.
+live in a built-in mock-window preview. Save a theme, drop it in your app's `Themes/` folder — done.
 
 ---
 
 ## Features
 
-- **42 semantic color slots** organized by surface group:  
+- **42 semantic color slots** organized into collapsible accordion groups:  
   Content · Sidebar · Control · Input · Accent · Primary / Secondary / Tertiary slots
-- **Live preview panel** — every edit is reflected instantly, no Apply button needed
+- **Live preview** — a full mock app window (title bar, sidebar, chat area, input bar, accent palette)
+  updates instantly on every edit; click any element to open its color picker
 - **Full HSV color picker** — saturation/value canvas, hue bar, brightness bar, alpha bar,
   RGBA sliders, hex input, old/new color swatches
-- **Theme metadata** — author name and description saved directly in the file
-- **Load & Save** — reads and writes the OXSUIT 1.0 `.oxsuit` format;
-  also reads legacy WPF `.xaml` theme files
+- **Theme metadata** — name, author, and description saved directly in the file; theme name
+  is the default suggestion for Save As
+- **Geometry tokens** — global Corner Radius and Shadow Depth sliders, plus per-surface
+  border thickness sliders for all 7 border-capable surfaces
+- **Randomizer** — one-click dark / mid / light palette generation with contrast-aware
+  text colors; 30-second cooldown confirmation guard
+- **Load & Save** — reads and writes the OXSUIT 1.0 `.oxsuit` format natively
 - **Error handling** — corrupt or invalid theme files show a clear warning;
   the current theme is never lost
 - **Claude's Choice** — built-in deep blue-teal starter theme, every color slot unique,
   designed by Claude (Anthropic)
-- **Dark UI throughout** — including DWM-themed title bars on Windows 11
-- **Options** — configurable themes folder, persisted between sessions
+- **Dark UI throughout** — including DWM-themed title bars, dark scroll bars, and
+  dark context menus on Windows 11
 
 ---
 
@@ -54,10 +59,20 @@ No installer needed. Copy the `.exe` and run.
 
 ---
 
+## Getting started
+
+1. Launch `Theminator.exe`
+2. Click **⚙ Options** and point the themes folder to any directory on your machine
+3. Use **New** to start from a blank light-mode template, or **Load Theme ▾** to open an existing `.oxsuit` file
+4. Edit colors — click any swatch on the left panel, or click any element in the live preview
+5. Click **Save As…** to write the finished theme
+
+---
+
 ## Building from source
 
 ```
-git clone https://github.com/your-org/Theminator
+git clone https://github.com/Doombug75/OXSUIT
 cd Theminator
 dotnet build
 ```
@@ -90,16 +105,24 @@ Themes are saved as UTF-8 XML files with the `.oxsuit` extension:
   </colors>
 
   <tokens>
-    <token key="CornerRadius" value="6" unit="px"/>
-    <token key="BorderWidth"  value="1" unit="px"/>
+    <token key="CornerRadius"         value="6"  unit="px"/>
+    <token key="ShadowDepth"          value="2"/>
+    <token key="ContentBorderWidth"   value="1"  unit="px"/>
+    <token key="SidebarBorderWidth"   value="1"  unit="px"/>
+    <token key="ControlBorderWidth"   value="1"  unit="px"/>
+    <token key="InputBorderWidth"     value="1"  unit="px"/>
+    <token key="PrimaryBorderWidth"   value="1"  unit="px"/>
+    <token key="SecondaryBorderWidth" value="1"  unit="px"/>
+    <token key="TertiaryBorderWidth"  value="1"  unit="px"/>
   </tokens>
 
 </oxsuit>
 ```
 
-See the [OXSUIT specification](../OXSUIT/SPEC.md) for the complete format reference,
-and [`loaders/wpf/`](../OXSUIT/loaders/wpf/) for the WPF loader that reads these files
-into a `ResourceDictionary`.
+See the [OXSUIT specification](https://github.com/Doombug75/OXSUIT/blob/master/SPEC.md) for the
+complete format reference, and the
+[WPF loader](https://github.com/Doombug75/OXSUIT/blob/master/loaders/wpf/README.md)
+for the loader that reads these files into a `ResourceDictionary`.
 
 ---
 
